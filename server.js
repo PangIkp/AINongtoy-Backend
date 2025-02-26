@@ -1,0 +1,38 @@
+const express = require("express");
+const dotenv = require("dotenv");
+const app = express();
+const cors = require("cors");
+const connectDB = require("./config/db");
+const user = require('./routes/user')
+// Load env vars
+dotenv.config({ path: "./config/config.env" });
+
+connectDB();
+
+app.use(cors());
+app.use(express.json());
+
+app.use("/api/v1/user", user);
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+
+
+const PORT = process.env.PORT || 3001;
+app.listen(
+  PORT,
+  console.log("Server runing in ", process.env.NODE_ENV, " mode on port ", PORT)
+);
+
+//Handle unhandled promise rejection
+process.on("unhandledRejection", (err, promise) => {
+  console.log(`Error: ${err.message}`);
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
+
+//     "cors": "^2.8.5",
+// "dotenv": "^16.4.5",
+// "express": "^4.19.2",
+// "mongoose": "^8.4.1",
