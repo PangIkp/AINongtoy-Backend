@@ -37,3 +37,24 @@ exports.createUser = async (req, res, next) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// @desc    Delete a user
+// @route   DELETE /api/v1/user/:id
+// @access  Public
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "No user found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {},
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
