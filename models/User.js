@@ -60,6 +60,11 @@ const UserSchema = new mongoose.Schema(
         "Phone number must be exactly 10 digits",
       ],
     },
+    password: {
+        type: String,
+        required: [true, "Please provide a password"],
+        minlength: [6, "Password must be at least 6 characters long"],
+      },
   },
   { timestamps: true }
 );
