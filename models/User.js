@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     username: {
       type: String,
       required: [true, "Please provide a username"],
@@ -33,6 +38,27 @@ const UserSchema = new mongoose.Schema(
         },
         message: "Last Name should contain only alphabets",
       },
+    },
+    email: {
+      type: String,
+      required: [true, "Please provide an email"],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      match: [
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+        "Please provide a valid email address",
+      ],
+    },
+    phoneNumber: {
+      type: String,
+      required: [true, "Please provide a phone number"],
+      unique: true,
+      trim: true,
+      match: [
+        /^[0-9]{10}$/,
+        "Phone number must be exactly 10 digits",
+      ],
     },
   },
   { timestamps: true }
