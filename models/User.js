@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema(
   {
-    id: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    // id: {
+    //   type: String,
+    //   required: true,
+    //   unique: true,
+    // },
     username: {
       type: String,
       required: [true, "Please provide a username"],
@@ -50,23 +52,45 @@ const UserSchema = new mongoose.Schema(
         "Please provide a valid email address",
       ],
     },
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+      },
     phoneNumber: {
       type: String,
       required: [true, "Please provide a phone number"],
       unique: true,
       trim: true,
-      match: [
-        /^[0-9]{10}$/,
-        "Phone number must be exactly 10 digits",
-      ],
+      match: [/^[0-9]{10}$/, "Phone number must be exactly 10 digits"],
     },
     password: {
-        type: String,
-        required: [true, "Please provide a password"],
-        minlength: [6, "Password must be at least 6 characters long"],
-      },
+      type: String,
+      required: [true, "Please provide a password"],
+      minlength: [6, "Password must be at least 6 characters long"],
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   { timestamps: true }
 );
+
+//Encrypt password using bcrypt
+UserSchema.pre("save", async function (next) {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+//Sign JWT and return
+UserSchema.methods.getSignedJwtToken = function () {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+};
+
+//Match user entered password to hashed password in database
+UserSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 module.exports = mongoose.model("User", UserSchema);
