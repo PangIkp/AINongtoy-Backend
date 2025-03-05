@@ -4,21 +4,45 @@ const User = require("../models/User");
 //@route    POST /api/v1/auth/register
 //@access   Public
 exports.register = async (req, res, next) => {
-  try {
-    const { name, email, password, role } = req.body;
-
-    //Create user
-    const user = await User.create(req.body);
-
-    //Create token
-    // const token = user.getSignedJwtToken();
-    // res.status(200).json({ success: true, token });
-    sendTokenResponse(user, 200, res);
-  } catch (err) {
-    res.status(400).json({ success: false });
-    console.log(err.stack);
-  }
-};
+    try {
+      const { username, firstName, lastName, email, password, phoneNumber } = req.body;
+  
+      // Validate required fields
+      if (!username || !firstName || !lastName || !email || !password || !phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          msg: "Please provide all required fields: username, firstName, lastName, email, password, phoneNumber",
+        });
+      }
+  
+      //Create user
+      const user = await User.create(req.body);
+  
+      //Create token and send response
+      sendTokenResponse(user, 200, res);
+    } catch (err) {
+      console.log(err.stack);
+  
+      // Handle Mongoose validation errors
+      if (err.name === "ValidationError") {
+        const errors = Object.values(err.errors).map((el) => el.message);
+        return res.status(400).json({ success: false, msg: errors });
+      }
+  
+      // Handle duplicate key errors (e.g., email, username, phoneNumber)
+      if (err.code === 11000) {
+        const field = Object.keys(err.keyValue)[0]; // Get the duplicate field name
+        return res.status(400).json({
+          success: false,
+          msg: `The ${field} '${err.keyValue[field]}' is already in use. Please use a different ${field}.`,
+        });
+      }
+  
+      // Other errors
+      res.status(500).json({ success: false, msg: "Server error" });
+    }
+  };
+  
 
 //@desc     Login user
 //@route    POST /api/v1/auth/login
