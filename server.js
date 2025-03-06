@@ -4,6 +4,7 @@ const app = express();
 const cors = require("cors");
 const connectDB = require("./config/db");
 const user = require('./routes/user')
+const auth = require('./routes/auth')
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
 
@@ -18,6 +19,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use("/api/v1/user", user);
+app.use("/api/v1/auth", auth);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
@@ -25,10 +27,15 @@ app.get("/", (req, res) => {
 
 
 const PORT = process.env.PORT || 3001;
-app.listen(
-  PORT,
-  console.log("Server runing in ", process.env.NODE_ENV, " mode on port ", PORT)
-);
+const server = app.listen(
+    PORT,
+    console.log(
+      "Server running in ",
+      process.env.NODE_ENV,
+      " mode on port ",
+      PORT
+    )
+  );
 
 //Handle unhandled promise rejection
 process.on("unhandledRejection", (err, promise) => {
