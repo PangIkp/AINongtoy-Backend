@@ -104,19 +104,19 @@ const sendTokenResponse = (user, statusCode, res) => {
     options.secure = true;
   }
 
-  res
-    .status(statusCode)
-    .cookie("token", token, options)
-    .json({
-      success: true,
-      //add for frontend
-      data: user,
-    //   _id: user._id,
-    //   name: user.name,
-    //   email: user.email,
-      //end for frontend
-      token,
-    });
+  res.status(statusCode).cookie("token", token, options).json({
+    success: true,
+    data: user, // 👈 Backend ส่ง user กลับไป
+    token,
+  });
+  
+  // ✅ Debug ดูค่าที่จะส่งกลับไปยัง Frontend
+  console.log("Response Data:", {
+    success: true,
+    data: user,
+    token,
+  });
+  
 };
 
 //@desc     Get current Logged in user
