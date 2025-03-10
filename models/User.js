@@ -69,6 +69,25 @@ const UserSchema = new mongoose.Schema(
       required: [true, "Please provide a password"],
       minlength: [6, "Password must be at least 6 characters long"],
     },
+
+    address: {
+        type: [
+          {
+            detail: { type: String, default: null, trim: true }, // รายละเอียด เช่น บ้านเลขที่, ถนน
+            province: { type: String, required: true, trim: true },
+            district: { type: String, required: true, trim: true },
+            subdistrict: { type: String, required: true, trim: true },
+            postalCode: { type: String, required: true, trim: true },
+          },
+        ],
+        validate: {
+          validator: function (arr) {
+            return arr.length <= 3; // จำกัดให้เก็บได้สูงสุด 3 รายการ
+          },
+          message: "You can only store up to 3 addresses.",
+        },
+    },
+    
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },
