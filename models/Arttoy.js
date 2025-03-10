@@ -1,0 +1,48 @@
+const mongoose = require("mongoose");
+
+const artToySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    prompt: {
+      type: String,
+      required: true,
+    },
+    size: {
+      type: String,
+      required: true,
+    },
+    material: {
+        type: String,
+        required: true,
+    },
+    
+    painting: {
+        type: String,
+        required: true,
+    },
+
+    assembly: {
+        type: String,
+        required: true,
+    },
+    picture: {
+        type: String,
+        required: true,
+    },
+    price: {
+        type: Number,
+        required: true,
+    },
+  },
+  {
+    timestamps: true, // เพิ่ม createdAt และ updatedAt อัตโนมัติ
+  }
+);
+
+const Arttoy = mongoose.model("Arttoy", artToySchema);
+
+module.exports = Arttoy;

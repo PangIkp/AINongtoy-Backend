@@ -131,13 +131,17 @@ exports.getMe = async (req, res, next) => {
 //@route    GET /api/v1/auth/logout
 //@access   Private
 exports.logout = async (req, res, next) => {
-  res.cookie("token", "none", {
-    expires: new Date(Date.now() + 1 * 1000),
-    httpOnly: false,
-  });
-
-  res.status(200).json({
-    success: true,
-    data: {},
-  });
-};
+    res.cookie("token", "", {
+      expires: new Date(0), // หมดอายุทันที
+      httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript ฝั่ง Client
+      secure: process.env.NODE_ENV === "production", // ใช้ secure cookie เมื่ออยู่บน HTTPS
+      sameSite: "None", // ป้องกันปัญหาเรื่อง Cross-Site Cookie (ถ้าใช้งานข้ามโดเมน)
+      path: "/", // เคลียร์ cookie ทุกหน้า
+    });
+  
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  };
+  
