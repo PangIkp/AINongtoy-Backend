@@ -3,41 +3,44 @@ const dotenv = require("dotenv");
 const app = express();
 const cors = require("cors");
 const connectDB = require("./config/db");
+
 const user = require('./routes/user')
 const auth = require('./routes/auth')
 const artToy = require('./routes/arttoy'); 
+// Add this line
+
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
 
 connectDB();
 
 app.use(cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type"],
-  }));
-  
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type"],
+}));
+
 app.use(express.json());
 
 app.use("/api/v1/user", user);
 app.use("/api/v1/auth", auth);
+
 app.use("/api/v1/arttoy", artToy);
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-
-
 const PORT = process.env.PORT || 3001;
 const server = app.listen(
-    PORT,
-    console.log(
-      "Server running in ",
-      process.env.NODE_ENV,
-      " mode on port ",
-      PORT
-    )
-  );
+  PORT,
+  console.log(
+    "Server running in ",
+    process.env.NODE_ENV,
+    " mode on port ",
+    PORT
+  )
+);
 
 //Handle unhandled promise rejection
 process.on("unhandledRejection", (err, promise) => {
