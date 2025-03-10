@@ -53,10 +53,10 @@ const UserSchema = new mongoose.Schema(
       ],
     },
     role: {
-        type: String,
-        enum: ["user", "admin"],
-        default: "user",
-      },
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     phoneNumber: {
       type: String,
       required: [true, "Please provide a phone number"],

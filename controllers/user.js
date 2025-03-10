@@ -22,21 +22,42 @@ exports.getUsers = async (req, res, next) => {
 // @route   POST /api/v1/user
 // @access  Public
 exports.createUser = async (req, res, next) => {
-    try {
-      const user = await User.create(req.body);
-  
-      return res.status(201).json({
-        success: true,
-        data: user,
-      });
-    } catch (err) {
-      console.error(err);
-      if (err.code === 11000) {
-        return res.status(400).json({ error: "This user already exists" });
-      }
-      res.status(500).json({ error: "Server error" });
+  try {
+    const user = await User.create(req.body);
+
+    return res.status(201).json({
+      success: true,
+      data: user,
+    });
+  } catch (err) {
+    console.error(err);
+    if (err.code === 11000) {
+      return res.status(400).json({ error: "This user already exists" });
     }
-  };
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// @desc    Get a user profile
+// @route   GET /api/v1/user/:id
+// @access  Public
+exports.getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 // @desc    Update a user
 // @route   PATCH /api/v1/user/:id
@@ -72,19 +93,19 @@ exports.updateUserProfile = async (req, res) => {
 // @route   DELETE /api/v1/user/:id
 // @access  Public
 exports.deleteUser = async (req, res, next) => {
-    try {
-      const user = await User.findByIdAndDelete(req.params.id);
-  
-      if (!user) {
-        return res.status(404).json({ error: "No user found" });
-      }
-  
-      return res.status(200).json({
-        success: true,
-        data: {},
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Server error" });
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "No user found" });
     }
-  };
+
+    return res.status(200).json({
+      success: true,
+      data: {},
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
