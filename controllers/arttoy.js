@@ -1,35 +1,53 @@
 // controllers/arttoy.js
 
+// สร้าง ArtToy ใหม่
+const asyncHandler = require("express-async-handler");
 const Arttoy = require("../models/Arttoy");
 
-// สร้าง ArtToy ใหม่
-const createArtToy = async (req, res) => {
-  try {
-    const { name, prompt, size, material, painting, assembly, picture, price, quantity } = req.body;
+// ฟังก์ชันที่ใช้สร้าง ArtToy
+const createArtToy = asyncHandler(async (req, res, next) => {
+  const { 
+    name, 
+    prompt, 
+    size, 
+    material, 
+    painting, 
+    assembly, 
+    price, 
+    quantity, 
+    imageUrl 
+  } = req.body;
 
-    const newArtToy = new Arttoy({
-      name,
-      prompt,
-      size,
-      material,
-      painting,
-      assembly,
-      picture,
-      price,
-      quantity
-    });
+  const userId = req.user.id; // ใช้ user ID ที่ได้รับจาก middleware
 
-    await newArtToy.save();
-    res.status(201).json(newArtToy);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
+  // คำนวณ totalPrice
+  const totalPrice = price * quantity;
+
+  // สร้าง ArtToy ใหม่
+  const artToy = await Arttoy.create({
+    name, 
+    size, 
+    material, 
+    painting, 
+    assembly, 
+    quantity, 
+    price, 
+    imageUrl,
+    user: userId, // เชื่อมโยงกับ user ID
+  });
+
+  res.status(201).json({
+    success: true,
+    data: artToy,
+  });
+});
+
 
 // ดึงข้อมูล ArtToy ทั้งหมด
 const getAllArtToys = async (req, res) => {
   try {
-    const artToys = await ArtToy.find();
+    const userId = req.user.id; // ใช้ user ID ที่ได้รับจาก middleware
+    const artToys = await Arttoy.find({ user: userId});  // กรอง ArtToy ตามผู้ใช้
     res.status(200).json(artToys);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -39,7 +57,7 @@ const getAllArtToys = async (req, res) => {
 // ดึงข้อมูล ArtToy ตาม ID
 const getArtToyById = async (req, res) => {
   try {
-    const artToy = await ArtToy.findById(req.params.id);
+    const artToy = await Arttoy.findById(req.params.id);
     if (!artToy) {
       return res.status(404).json({ message: "ArtToy not found" });
     }
@@ -60,7 +78,7 @@ const updateArtToy = async (req, res) => {
       return res.status(400).json({ message: "Invalid updates!" });
     }
 
-    const artToy = await ArtToy.findById(req.params.id);
+    const artToy = await Arttoy.findById(req.params.id);
     if (!artToy) {
       return res.status(404).json({ message: "ArtToy not found" });
     }
@@ -76,15 +94,32 @@ const updateArtToy = async (req, res) => {
 // ลบ ArtToy
 const deleteArtToy = async (req, res) => {
   try {
-    const artToy = await ArtToy.findByIdAndDelete(req.params.id);
-    if (!artToy) {
-      return res.status(404).json({ message: "ArtToy not found" });
+    const userId = req.user.id; // Retrieve userId from middleware
+    const { id } = req.params;
+
+    // ✅ Validate if the ID is in the correct format (ObjectId)
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid ID format" });
     }
-    res.status(200).json({ message: "ArtToy deleted", artToy });
+
+    // 🔹 Find the ArtToy by ID and userId
+    const artToy = await Arttoy.findOne({ _id: id, user: userId });
+
+    if (!artToy) {
+      return res.status(404).json({ message: "ArtToy not found or you do not have permission to delete it" });
+    }
+
+    // 🔥 Delete the ArtToy
+    await Arttoy.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "ArtToy deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error deleting ArtToy:", error);
+    res.status(500).json({ message: "An error occurred. Please try again later" });
   }
 };
+
+
 
 module.exports = {
   createArtToy,

@@ -14,11 +14,7 @@ dotenv.config({ path: "./config/config.env" });
 
 connectDB();
 
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type"],
-}));
+app.use(cors());
 
 app.use(express.json());
 

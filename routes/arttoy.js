@@ -1,4 +1,5 @@
 const express = require("express");
+const { protect } = require("../middleware/auth");
 const {
   createArtToy,
   getAllArtToys,
@@ -10,18 +11,18 @@ const {
 const router = express.Router();
 
 // Route: สร้าง ArtToy ใหม่
-router.post("/arttoys", createArtToy);
+router.post("/", protect, createArtToy);
 
 // Route: ดึงข้อมูล ArtToy ทั้งหมด
-router.get("/arttoys", getAllArtToys);
+router.get("/",protect, getAllArtToys);
 
 // Route: ดึงข้อมูล ArtToy ตาม ID
-router.get("/arttoys/:id", getArtToyById);
+router.get("/:id", getArtToyById);
 
 // Route: แก้ไขข้อมูล ArtToy
-router.patch("/arttoys/:id", updateArtToy);
+router.patch("/:id", updateArtToy);
 
 // Route: ลบ ArtToy
-router.delete("/arttoys/:id", deleteArtToy);
+router.delete("/:id",protect, deleteArtToy);
 
 module.exports = router;
