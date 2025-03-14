@@ -17,10 +17,10 @@ router.post("/", protect, createArtToy);
 router.get("/",protect, getAllArtToys);
 
 // Route: ดึงข้อมูล ArtToy ตาม ID
-router.get("/:id", getArtToyById);
+router.get("/:id",protect, getArtToyById);
 
 // Route: แก้ไขข้อมูล ArtToy
-router.patch("/:id", updateArtToy);
+router.patch("/:id",protect, updateArtToy);
 
 // Route: ลบ ArtToy
 router.delete("/:id",protect, deleteArtToy);

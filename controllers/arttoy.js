@@ -3,6 +3,8 @@
 // สร้าง ArtToy ใหม่
 const asyncHandler = require("express-async-handler");
 const Arttoy = require("../models/Arttoy");
+const mongoose = require("mongoose");
+
 
 // ฟังก์ชันที่ใช้สร้าง ArtToy
 const createArtToy = asyncHandler(async (req, res, next) => {
@@ -54,24 +56,36 @@ const getAllArtToys = async (req, res) => {
   }
 };
 
-// ดึงข้อมูล ArtToy ตาม ID
+// ดึงข้อมูล ArtToy ตาม ID และตรวจสอบว่าเป็นของผู้ใช้ที่ล็อกอินหรือไม่
 const getArtToyById = async (req, res) => {
   try {
-    const artToy = await Arttoy.findById(req.params.id);
-    if (!artToy) {
-      return res.status(404).json({ message: "ArtToy not found" });
+    const userId = req.user.id; // ใช้ user ID ที่ได้รับจาก middleware
+    const { id } = req.params;
+
+    // ตรวจสอบว่า ID เป็น ObjectId ที่ถูกต้องหรือไม่
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid ArtToy ID" });
     }
+
+    // ค้นหา ArtToy และตรวจสอบว่าเป็นของ userId หรือไม่
+    const artToy = await Arttoy.findOne({ _id: id, user: userId });
+
+    if (!artToy) {
+      return res.status(404).json({ message: "ArtToy not found or access denied" });
+    }
+
     res.status(200).json(artToy);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+
 // แก้ไขข้อมูล ArtToy
 const updateArtToy = async (req, res) => {
   try {
     const updates = Object.keys(req.body);
-    const allowedUpdates = ["name", "prompt", "size", "material", "painting", "assembly", "picture", "price", "quantity"];
+    const allowedUpdates = ["name", "size", "material", "painting", "assembly", "imageUrl", "price", "quantity"];
     const isValidUpdate = updates.every((update) => allowedUpdates.includes(update));
 
     if (!isValidUpdate) {
