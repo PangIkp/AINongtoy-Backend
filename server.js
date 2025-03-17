@@ -3,6 +3,9 @@ const dotenv = require("dotenv");
 const app = express();
 const cors = require("cors");
 const connectDB = require("./config/db");
+const user = require('./routes/user');
+const auth = require('./routes/auth');
+// const address = require('./routes/address'); // Add this line
 
 const user = require('./routes/user')
 const auth = require('./routes/auth')
@@ -21,6 +24,7 @@ app.use(express.json());
 
 app.use("/api/v1/user", user);
 app.use("/api/v1/auth", auth);
+// app.use("/api/v1/address", address); // Add this line
 app.use("/api/v1/arttoy", artToy);
 app.use("/api/v1/favorite", favorite);
 
