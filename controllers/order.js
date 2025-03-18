@@ -34,10 +34,24 @@ const createOrder = asyncHandler(async (req, res) => {
     data: order,
   });
 });
+// ✅ ดึงคำสั่งซื้อทั้งหมดของผู้ใช้ตาม userId
+const getOrderByUserId = asyncHandler(async (req, res) => {
+    const userId = req.user.id; // ใช้ user ID จาก middleware
 
-module.exports = { createOrder };
+    if (!userId) {
+        return res.status(401).json({ message: "User not found" });
+    }
+
+    // ดึงคำสั่งซื้อของผู้ใช้
+    const orders = await Order.find({ user: userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+        success: true,
+        data: orders,
+    });
+});
 
 module.exports = {
     createOrder,
-  };
-  
+    getOrderByUserId
+};
