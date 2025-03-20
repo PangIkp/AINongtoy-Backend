@@ -26,7 +26,36 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+// ตรวจสอบว่า Token หมดอายุหรือไม่ และบอกเวลาที่จะหมด
+const checkTokenValidity = async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token || token === "null") {
+    return res.status(401).json({ success: false, message: "Token is missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // ถอดรหัส Token
+
+    // คำนวณเวลาที่ Token จะหมดอายุ
+    const currentTime = Math.floor(Date.now() / 1000); // เวลาปัจจุบันในรูปแบบ UNIX timestamp
+    const timeToExpire = decoded.exp - currentTime; // เวลาที่เหลือก่อนหมดอายุ (วินาที)
+
+    res.status(200).json({
+      success: true,
+      message: "Token is valid",
+      expiresIn: timeToExpire, // เวลาที่เหลือก่อนหมดอายุ (วินาที)
+      decoded,
+    });
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ success: false, message: "Token has expired" });
+    }
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+};
+
+module.exports = { protect, checkTokenValidity };
 
 //Grant access to specific roles
 exports.authorize = (...roles) => {
