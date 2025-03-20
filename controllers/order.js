@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose"); 
 const Order = require("../models/Order");
 const User = require("../models/User");
 
@@ -51,7 +52,34 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
     });
 });
 
+const getOrderById = asyncHandler(async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+  
+      console.log("Received orderId:", id);
+  
+      // ตรวจสอบว่า orderId เป็น ObjectId ที่ถูกต้องหรือไม่
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid Order ID" });
+      }
+  
+      // ค้นหา Order และตรวจสอบว่าเป็นของ userId หรือไม่
+      const order = await Order.findOne({ _id: id, user: userId }).populate("user", "phoneNumber");
+  
+      if (!order) {
+        return res.status(404).json({ message: "Order not found or access denied" });
+      }
+  
+      res.status(200).json(order);
+    } catch (error) {
+      console.error("Error:", error.message);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
 module.exports = {
     createOrder,
-    getOrderByUserId
+    getOrderByUserId,
+    getOrderById
 };
