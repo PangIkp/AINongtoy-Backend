@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 // @desc    Get all users
 // @route   GET /api/v1/user
@@ -67,21 +68,23 @@ exports.updateUserProfile = async (req, res) => {
     const { id } = req.params; // ดึง id จาก URL
     const updates = req.body; // ข้อมูลที่ต้องการอัปเดต
 
-    // ค้นหาและอัปเดตผู้ใช้
-    const updatedUser = await User.findByIdAndUpdate(id, updates, {
-      new: true, // ส่งค่าที่อัปเดตกลับมา
-      runValidators: true, // ตรวจสอบ validation ก่อนอัปเดต
+    // ค้นหาผู้ใช้ในฐานข้อมูล
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // อัปเดตฟิลด์ต่าง ๆ
+    Object.keys(updates).forEach((key) => {
+      user[key] = updates[key];
     });
 
-    if (!updatedUser) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
+    // บันทึกข้อมูลใหม่ (middleware pre("save") จะทำงานที่นี่)
+    await user.save();
 
     res.status(200).json({
       success: true,
-      data: updatedUser,
+      data: user,
     });
   } catch (err) {
     console.error(err);

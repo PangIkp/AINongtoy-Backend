@@ -53,10 +53,10 @@ const UserSchema = new mongoose.Schema(
       ],
     },
     role: {
-        type: String,
-        enum: ["user", "admin"],
-        default: "user",
-      },
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     phoneNumber: {
       type: String,
       required: [true, "Please provide a phone number"],
@@ -71,34 +71,28 @@ const UserSchema = new mongoose.Schema(
     },
 
     address: {
-        type: [
-          {
-            detail: { type: String, default: null, trim: true }, // รายละเอียด เช่น บ้านเลขที่, ถนน
-            province: { type: String, required: true, trim: true },
-            district: { type: String, required: true, trim: true },
-            subdistrict: { type: String, required: true, trim: true },
-            postalCode: { type: String, required: true, trim: true },
-          },
-        ],
-        validate: {
-          validator: function (arr) {
-            return arr.length <= 3; // จำกัดให้เก็บได้สูงสุด 3 รายการ
-          },
-          message: "You can only store up to 3 addresses.",
+      type: [
+        {
+          detail: { type: String, default: null, trim: true }, // รายละเอียด เช่น บ้านเลขที่, ถนน
+          province: { type: String, required: true, trim: true },
+          district: { type: String, required: true, trim: true },
+          subdistrict: { type: String, required: true, trim: true },
+          postalCode: { type: String, required: true, trim: true },
         },
+      ],
+      validate: {
+        validator: function (arr) {
+          return arr.length <= 3; // จำกัดให้เก็บได้สูงสุด 3 รายการ
+        },
+        message: "You can only store up to 3 addresses.",
+      },
     },
-    
+
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },
   { timestamps: true }
 );
-
-//Encrypt password using bcrypt
-UserSchema.pre("save", async function (next) {
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
 
 //Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function () {
@@ -106,6 +100,18 @@ UserSchema.methods.getSignedJwtToken = function () {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
+
+//Encrypt password using bcrypt
+UserSchema.pre("save", async function (next) {
+  // ตรวจสอบว่าฟิลด์ password ถูกแก้ไขหรือไม่
+  if (!this.isModified("password")) {
+    return next(); // ถ้าไม่ได้แก้ไข password ให้ข้ามไป
+  }
+
+  const salt = await bcrypt.genSalt(10); // สร้าง salt
+  this.password = await bcrypt.hash(this.password, salt); // เข้ารหัสรหัสผ่านใหม่
+  next();
+});
 
 //Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function (enteredPassword) {
