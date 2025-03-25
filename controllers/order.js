@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose"); 
 const Order = require("../models/Order");
 const User = require("../models/User");
+const { authorize } = require("../middleware/auth"); 
 
 const createOrder = asyncHandler(async (req, res) => {
     const { name, size, material, painting, assembly, quantity, price, shipping, total, address, payment, imageUrl } = req.body;
@@ -78,8 +79,29 @@ const getOrderById = asyncHandler(async (req, res) => {
     }
   });
 
+  // for Admin
+
+  const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
+    // ตรวจสอบว่า user เป็น admin หรือไม่
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "User does not have admin privileges",
+      });
+    }
+  
+    // ดึงคำสั่งซื้อทั้งหมดจากฐานข้อมูล
+    const orders = await Order.find().sort({ createdAt: -1 });
+  
+    res.status(200).json({
+      success: true,
+      data: orders,
+    });
+  });
+
 module.exports = {
     createOrder,
     getOrderByUserId,
-    getOrderById
+    getOrderById,
+    getAllOrdersForAdmin,
 };

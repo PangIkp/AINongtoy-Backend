@@ -1,7 +1,7 @@
 const express = require("express");
-const { protect } = require("../middleware/auth");
+const { protect, authorize } = require("../middleware/auth");
 const {
-    createOrder,getOrderByUserId,getOrderById
+    createOrder,getOrderByUserId,getOrderById,getAllOrdersForAdmin
 } = require("../controllers/order");
 
 const router = express.Router();
@@ -10,6 +10,10 @@ const router = express.Router();
 router.post("/", protect, createOrder);
 router.get("/", protect, getOrderByUserId);
 router.get("/:id",protect, getOrderById);
+
+
+// for admin
+router.get("/admin/orders", protect, authorize("admin"), getAllOrdersForAdmin);
 
 
 module.exports = router;

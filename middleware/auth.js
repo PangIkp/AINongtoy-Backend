@@ -55,10 +55,8 @@ const checkTokenValidity = async (req, res) => {
   }
 };
 
-module.exports = { protect, checkTokenValidity };
-
 //Grant access to specific roles
-exports.authorize = (...roles) => {
+const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
@@ -69,3 +67,4 @@ exports.authorize = (...roles) => {
     next();
   };
 };
+module.exports = { protect, authorize, checkTokenValidity };
