@@ -145,10 +145,50 @@ const deleteOrderByAdmin = asyncHandler(async (req, res) => {
   });
 });
 
+const updateOrderByAdmin = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;  // ใช้ req.body โดยตรงเพื่อรับข้อมูลทั้งหมดที่ส่งมา
+  
+    // ตรวจสอบว่า user เป็น admin หรือไม่
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "User does not have admin privileges",
+      });
+    }
+  
+    // ค้นหาคำสั่งซื้อ
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+  
+    // อัปเดตคำสั่งซื้อด้วยข้อมูลจาก req.body
+    for (let key in updateData) {
+      if (updateData[key]) {
+        order[key] = updateData[key];
+      }
+    }
+  
+    // บันทึกคำสั่งซื้อที่อัปเดตแล้ว
+    await order.save();
+  
+    res.status(200).json({
+      success: true,
+      message: "Order updated successfully",
+      data: order, // ส่งข้อมูลคำสั่งซื้อที่อัปเดตกลับไป
+    });
+  });
+  
+
 module.exports = {
   createOrder,
   getOrderByUserId,
   getOrderById,
   getAllOrdersForAdmin,
   deleteOrderByAdmin,
+  updateOrderByAdmin,
 };
