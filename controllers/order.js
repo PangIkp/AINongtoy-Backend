@@ -28,7 +28,8 @@ const createOrder = asyncHandler(async (req, res) => {
     address,
     payment,
     imageUrl,
-    status: "Pending"
+    status: "Pending",
+    paymentStatus: "Unpaid"
   });
 
   res.status(201).json({
