@@ -112,3 +112,58 @@ exports.deleteUser = async (req, res, next) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// @desc    Check if username, email, or phone number exists
+// @route   POST /api/v1/user/check-exists
+// @access  Public
+exports.checkExists = async (req, res) => {
+  try {
+    const { username, email, phoneNumber } = req.body;
+
+    if (!username && !email && !phoneNumber) {
+      return res.status(400).json({ success: false, message: "At least one field (username, email, phoneNumber) is required" });
+    }
+
+    const existingFields = {};
+
+    // ตรวจสอบ username
+    if (username) {
+      const userWithUsername = await User.findOne({ username });
+      if (userWithUsername) {
+        existingFields.username = { exists: true, _id: userWithUsername._id };
+      } else {
+        existingFields.username = { exists: false };
+      }
+    }
+
+    // ตรวจสอบ email
+    if (email) {
+      const userWithEmail = await User.findOne({ email });
+      if (userWithEmail) {
+        existingFields.email = { exists: true, _id: userWithEmail._id };
+      } else {
+        existingFields.email = { exists: false };
+      }
+    }
+
+    // ตรวจสอบ phoneNumber
+    if (phoneNumber) {
+      const userWithPhoneNumber = await User.findOne({ phoneNumber });
+      if (userWithPhoneNumber) {
+        existingFields.phoneNumber = { exists: true, _id: userWithPhoneNumber._id };
+      } else {
+        existingFields.phoneNumber = { exists: false };
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      exists: existingFields,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
+
