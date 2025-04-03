@@ -168,6 +168,37 @@ exports.checkExists = async (req, res) => {
 };
 
 // for Admin
+
+exports.createUserForAdmin = async (req, res, next) => {
+  try {
+    // ตรวจสอบว่า user เป็น admin หรือไม่
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'User does not have admin privileges', // หากไม่ใช่ admin
+      });
+    }
+
+    // สร้างผู้ใช้ใหม่
+    const user = await User.create(req.body);
+
+    return res.status(201).json({
+      success: true,
+      data: user,  // ส่งข้อมูลผู้ใช้ที่สร้างสำเร็จ
+    });
+  } catch (err) {
+    console.error(err);
+
+    // ตรวจสอบว่าเป็นกรณีผู้ใช้ซ้ำหรือไม่
+    if (err.code === 11000) {
+      return res.status(400).json({ error: 'This user already exists' });
+    }
+
+    // หากเกิดข้อผิดพลาดอื่น ๆ แสดงข้อความผิดพลาด
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 exports.getAllUsersForAdmin = asyncHandler(async (req, res) => {
   // ตรวจสอบว่า user เป็น admin หรือไม่
   if (req.user.role !== 'admin') {

@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUsers, createUser, updateUserProfile, deleteUser, getUserProfile, checkExists, getAllUsersForAdmin, updateUserForAdmin, deleteUserForAdmin } = require("../controllers/user");
+const { getUsers, createUser, updateUserProfile, deleteUser, getUserProfile, checkExists,createUserForAdmin, getAllUsersForAdmin, updateUserForAdmin, deleteUserForAdmin } = require("../controllers/user");
 const { protect, authorize } = require("../middleware/auth");
 
 const jwt = require("jsonwebtoken");
@@ -16,6 +16,7 @@ router.delete("/:id", deleteUser);
 router.post("/check-exists", checkExists);
 
 // for Admin
+router.post('/admin/users', protect, createUserForAdmin);
 router.get("/admin/users", protect, authorize("admin"), getAllUsersForAdmin);
 router.patch("/admin/users/:id", protect, authorize("admin"), updateUserForAdmin);
 router.delete("/admin/users/:id", protect, authorize("admin"), deleteUserForAdmin);
