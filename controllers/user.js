@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 
 // @desc    Get all users
@@ -112,3 +113,20 @@ exports.deleteUser = async (req, res, next) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// for Admin
+exports.getAllUsersForAdmin = asyncHandler(async (req, res) => {
+  // ตรวจสอบว่า user เป็น admin หรือไม่
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'User does not have admin privileges',
+    });
+  }
+  const users = await User.find().sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    data: users,
+  });
+});
