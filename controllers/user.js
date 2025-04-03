@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 
 // @desc    Get all users
@@ -166,4 +167,53 @@ exports.checkExists = async (req, res) => {
   }
 };
 
+// for Admin
+exports.getAllUsersForAdmin = asyncHandler(async (req, res) => {
+  // ตรวจสอบว่า user เป็น admin หรือไม่
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'User does not have admin privileges',
+    });
+  }
+  const users = await User.find().sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    data: users,
+  });
+});
+
+exports.updateUserForAdmin = asyncHandler(async (req, res) => {
+  const { id } = req.params; // รับ ID ของ User จาก URL
+  const updates = req.body; // รับค่าที่ต้องการอัปเดตจาก Body
+
+  // ตรวจสอบว่า user เป็น admin หรือไม่
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "User does not have admin privileges",
+    });
+  }
+
+  // ค้นหาและอัปเดตเฉพาะฟิลด์ที่ถูกส่งมา
+  const updatedUser = await User.findByIdAndUpdate(id, updates, {
+    new: true, // คืนค่าข้อมูลที่อัปเดต
+    runValidators: true, // ตรวจสอบค่าที่ส่งมาให้ตรงกับ Schema
+  });
+
+  // ตรวจสอบว่าพบ user หรือไม่
+  if (!updatedUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    data: updatedUser,
+  });
+});
 
