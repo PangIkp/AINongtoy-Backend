@@ -1,5 +1,4 @@
 const express = require("express");
-const { getUsers, createUser, updateUserProfile, deleteUser, getUserProfile, checkExists } = require("../controllers/user");
 const { getUsers, createUser, updateUserProfile, deleteUser, getUserProfile, getAllUsersForAdmin, updateUserForAdmin } = require("../controllers/user");
 const { protect, authorize } = require("../middleware/auth");
 
