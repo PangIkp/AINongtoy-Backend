@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUsers, createUser, updateUserProfile, deleteUser, getUserProfile, getAllUsersForAdmin } = require("../controllers/user");
+const { getUsers, createUser, updateUserProfile, deleteUser, getUserProfile, getAllUsersForAdmin,updateUserForAdmin } = require("../controllers/user");
 const { protect, authorize } = require("../middleware/auth");
 
 const jwt = require("jsonwebtoken");
@@ -16,6 +16,8 @@ router.delete("/:id", deleteUser);
 
 // for Admin
 router.get("/admin/users", protect, authorize("admin"), getAllUsersForAdmin);
+router.patch("/admin/users/:id", protect, authorize("admin"), updateUserForAdmin);
+
 
 
 module.exports = router;
