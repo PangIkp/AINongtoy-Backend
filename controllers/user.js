@@ -217,3 +217,39 @@ exports.updateUserForAdmin = asyncHandler(async (req, res) => {
   });
 });
 
+exports.deleteUserForAdmin = async (req, res) => {
+  const { id } = req.params; // รับ ID ของผู้ใช้จาก URL
+
+  try {
+    // ตรวจสอบสิทธิ์ของผู้ใช้ก่อนที่จะดำเนินการลบ
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "User does not have admin privileges", // ผู้ใช้ไม่มีสิทธิ์เป็นแอดมิน
+      });
+    }
+
+    // ลบผู้ใช้ตาม ID
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    // ตรวจสอบว่าพบผู้ใช้หรือไม่
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found", // ไม่พบผู้ใช้
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully", // ลบผู้ใช้สำเร็จ
+      data: deletedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error", // เกิดข้อผิดพลาดที่เซิร์ฟเวอร์
+      error: error.message,
+    });
+  }
+};
