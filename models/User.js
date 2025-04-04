@@ -90,7 +90,7 @@ const UserSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["active", "inactive", "banned"], // สามารถกำหนดได้ 3 สถานะ
+      enum: ["active", "banned"], // สามารถกำหนดได้ 3 สถานะ
       default: "active", // กำหนดค่าเริ่มต้นเป็น active
     },
 
