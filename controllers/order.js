@@ -110,12 +110,12 @@ const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
   }
 
   const orders = await Order.find()
-    .populate("user", "firstName lastName")
+    .populate("user", "firstName lastName phoneNumber")
     .sort({ createdAt: -1 });
 
   const formattedOrders = orders.map(order => ({
     ...order.toObject(),
-    userFullName: `${order.user.firstName} ${order.user.lastName}`,
+    userFullName: `${order.user.firstName} ${order.user.lastName} ${order.user.phoneNumber}`,
   }));
 
   res.status(200).json({
