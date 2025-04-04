@@ -101,20 +101,26 @@ const getOrderById = asyncHandler(async (req, res) => {
 // for Admin
 
 const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
-  // ตรวจสอบว่า user เป็น admin หรือไม่
-  if (req.user.role !== "admin") {
+  // ตรวจสอบสิทธิ์ admin ก่อน
+  if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: "User does not have admin privileges",
+      message: 'User does not have admin privileges',
     });
   }
 
-  // ดึงคำสั่งซื้อทั้งหมดจากฐานข้อมูล
-  const orders = await Order.find().sort({ createdAt: -1 });
+  const orders = await Order.find()
+    .populate("user", "firstName lastName")
+    .sort({ createdAt: -1 });
+
+  const formattedOrders = orders.map(order => ({
+    ...order.toObject(),
+    userFullName: `${order.user.firstName} ${order.user.lastName}`,
+  }));
 
   res.status(200).json({
     success: true,
-    data: orders,
+    data: formattedOrders,
   });
 });
 
