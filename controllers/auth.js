@@ -48,45 +48,61 @@ exports.register = async (req, res, next) => {
 //@route    POST /api/v1/auth/login
 //@access   Public
 exports.login = async (req, res, next) => {
-    try {
-        const { email, username, password } = req.body;
+  try {
+      const { email, username, password } = req.body;
 
-        //Validate email/username & password
-        if ((!email && !username) || !password) {
-            return res
-                .status(400)
-                .json({ success: false, msg: "Please provide an email/username and password" });
-        }
+      // Validate email/username & password
+      if ((!email && !username) || !password) {
+          return res
+              .status(400)
+              .json({ success: false, msg: "Please provide an email/username and password" });
+      }
 
-        //Check for user
-        const user = await User.findOne({
-            $or: [{ email }, { username }]
-        }).select("+password");
+      // Check for user
+      const user = await User.findOne({
+          $or: [{ email }, { username }]
+      }).select("+password");
 
-        if (!user) {
-            return res
-                .status(400)
-                .json({ success: false, msg: "Invalid credentials" });
-        }
+      if (!user) {
+          return res
+              .status(400)
+              .json({ success: false, msg: "Invalid credentials" });
+      }
 
-        //Check if password matches
-        const isMatch = await user.matchPassword(password);
+      // Check if user is banned or inactive
+      if (user.status === 'banned') {
+          return res.status(403).json({
+              success: false,
+              msg: "Your account has been banned"
+          });
+      }
 
-        if (!isMatch) {
-            return res
-                .status(401)
-                .json({ success: false, msg: "Invalid credentials" });
-        }
+      if (user.status === 'inactive') {
+          return res.status(403).json({
+              success: false,
+              msg: "Your account is inactive"
+          });
+      }
 
-        //Create token
-        sendTokenResponse(user, 200, res);
-    } catch (err) {
-        return res.status(401).json({
-            success: false,
-            msg: "Cannot convert email/username or password to string",
-        });
-    }
+      // Check if password matches
+      const isMatch = await user.matchPassword(password);
+
+      if (!isMatch) {
+          return res
+              .status(401)
+              .json({ success: false, msg: "Invalid credentials" });
+      }
+
+      // Create token
+      sendTokenResponse(user, 200, res);
+  } catch (err) {
+      return res.status(401).json({
+          success: false,
+          msg: "Cannot convert email/username or password to string",
+      });
+  }
 };
+
 
 //Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
