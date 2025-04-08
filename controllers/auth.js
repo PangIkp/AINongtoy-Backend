@@ -4,102 +4,87 @@ const User = require("../models/User");
 //@route    POST /api/v1/auth/register
 //@access   Public
 exports.register = async (req, res, next) => {
-    try {
-      const { username, firstName, lastName, email, password, phoneNumber } = req.body;
-  
-      // Validate required fields
-      if (!username || !firstName || !lastName || !email || !password || !phoneNumber) {
-        return res.status(400).json({
-          success: false,
-          msg: "Please provide all required fields: username, firstName, lastName, email, password, phoneNumber",
-        });
-      }
-  
-      //Create user
-      const user = await User.create(req.body);
-  
-      //Create token and send response
-      sendTokenResponse(user, 200, res);
-    } catch (err) {
-      console.log(err.stack);
-  
-      // Handle Mongoose validation errors
-      if (err.name === "ValidationError") {
-        const errors = Object.values(err.errors).map((el) => el.message);
-        return res.status(400).json({ success: false, msg: errors });
-      }
-  
-      // Handle duplicate key errors (e.g., email, username, phoneNumber)
-      if (err.code === 11000) {
-        const field = Object.keys(err.keyValue)[0]; // Get the duplicate field name
-        return res.status(400).json({
-          success: false,
-          msg: `The ${field} '${err.keyValue[field]}' is already in use. Please use a different ${field}.`,
-        });
-      }
-  
-      // Other errors
-      res.status(500).json({ success: false, msg: "Server error" });
+  try {
+    const { username, firstName, lastName, email, password, phoneNumber } = req.body;
+
+    // Validate required fields
+    if (!username || !firstName || !lastName || !email || !password || !phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        msg: "Please provide all required fields: username, firstName, lastName, email, password, phoneNumber",
+      });
     }
-  };
-  
+
+    //Create user
+    const user = await User.create(req.body);
+
+    //Create token and send response
+    sendTokenResponse(user, 200, res);
+  } catch (err) {
+    console.log(err.stack);
+
+    // Handle Mongoose validation errors
+    if (err.name === "ValidationError") {
+      const errors = Object.values(err.errors).map((el) => el.message);
+      return res.status(400).json({ success: false, msg: errors });
+    }
+
+    // Handle duplicate key errors (e.g., email, username, phoneNumber)
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyValue)[0]; // Get the duplicate field name
+      return res.status(400).json({
+        success: false,
+        msg: `The ${field} '${err.keyValue[field]}' is already in use. Please use a different ${field}.`,
+      });
+    }
+
+    // Other errors
+    res.status(500).json({ success: false, msg: "Server error" });
+  }
+};
+
 
 //@desc     Login user
 //@route    POST /api/v1/auth/login
 //@access   Public
 exports.login = async (req, res, next) => {
   try {
-      const { email, username, password } = req.body;
+    const { email, username, password } = req.body;
 
-      // Validate email/username & password
-      if ((!email && !username) || !password) {
-          return res
-              .status(400)
-              .json({ success: false, msg: "Please provide an email/username and password" });
-      }
+    // Validate email/username & password
+    if ((!email && !username) || !password) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Please provide an email/username and password" });
+    }
 
-      // Check for user
-      const user = await User.findOne({
-          $or: [{ email }, { username }]
-      }).select("+password");
+    // Check for user
+    const user = await User.findOne({
+      $or: [{ email }, { username }]
+    }).select("+password");
 
-      if (!user) {
-          return res
-              .status(400)
-              .json({ success: false, msg: "Invalid credentials" });
-      }
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Invalid credentials" });
+    }
 
-      // Check if user is banned or inactive
-      if (user.status === 'banned') {
-          return res.status(403).json({
-              success: false,
-              msg: "Your account has been banned"
-          });
-      }
+    // Check if password matches
+    const isMatch = await user.matchPassword(password);
 
-      if (user.status === 'inactive') {
-          return res.status(403).json({
-              success: false,
-              msg: "Your account is inactive"
-          });
-      }
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, msg: "Invalid credentials" });
+    }
 
-      // Check if password matches
-      const isMatch = await user.matchPassword(password);
-
-      if (!isMatch) {
-          return res
-              .status(401)
-              .json({ success: false, msg: "Invalid credentials" });
-      }
-
-      // Create token
-      sendTokenResponse(user, 200, res);
+    // Create token
+    sendTokenResponse(user, 200, res);
   } catch (err) {
-      return res.status(401).json({
-          success: false,
-          msg: "Cannot convert email/username or password to string",
-      });
+    return res.status(401).json({
+      success: false,
+      msg: "Cannot convert email/username or password to string",
+    });
   }
 };
 
@@ -125,14 +110,14 @@ const sendTokenResponse = (user, statusCode, res) => {
     data: user, // 👈 Backend ส่ง user กลับไป
     token,
   });
-  
+
   // ✅ Debug ดูค่าที่จะส่งกลับไปยัง Frontend
   console.log("Response Data:", {
     success: true,
     data: user,
     token,
   });
-  
+
 };
 
 //@desc     Get current Logged in user
@@ -147,17 +132,16 @@ exports.getMe = async (req, res, next) => {
 //@route    GET /api/v1/auth/logout
 //@access   Private
 exports.logout = async (req, res, next) => {
-    res.cookie("token", "", {
-      expires: new Date(0), // หมดอายุทันที
-      httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript ฝั่ง Client
-      secure: process.env.NODE_ENV === "production", // ใช้ secure cookie เมื่ออยู่บน HTTPS
-      sameSite: "None", // ป้องกันปัญหาเรื่อง Cross-Site Cookie (ถ้าใช้งานข้ามโดเมน)
-      path: "/", // เคลียร์ cookie ทุกหน้า
-    });
-  
-    res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  };
-  
+  res.cookie("token", "", {
+    expires: new Date(0), // หมดอายุทันที
+    httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript ฝั่ง Client
+    secure: process.env.NODE_ENV === "production", // ใช้ secure cookie เมื่ออยู่บน HTTPS
+    sameSite: "None", // ป้องกันปัญหาเรื่อง Cross-Site Cookie (ถ้าใช้งานข้ามโดเมน)
+    path: "/", // เคลียร์ cookie ทุกหน้า
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
