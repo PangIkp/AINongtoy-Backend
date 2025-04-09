@@ -10,6 +10,7 @@ const auth = require('./routes/auth')
 const artToy = require('./routes/arttoy'); 
 const favorite = require('./routes/favorite'); 
 const order = require('./routes/order'); 
+const keyword = require('./routes/keyword');
 
 // Add this line
 
@@ -29,6 +30,7 @@ app.use("/api/v1/auth", auth);
 app.use("/api/v1/arttoy", artToy);
 app.use("/api/v1/favorite", favorite);
 app.use("/api/v1/order", order);
+app.use("/api/v1/keyword", keyword);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
