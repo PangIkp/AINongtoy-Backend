@@ -38,24 +38,39 @@ const createKeyword = async (req, res) => {
     }
   };
 
-const getKeywordsForAdmin = async (req, res) => {
-  try {
-    const user = req.user; // ดึง user จาก middleware auth
-
-    if (!user || user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admin can access all keywords" });
+  const getKeywordsForAdmin = asyncHandler(async (req, res) => {
+    try {
+      const user = req.user; // ดึง user จาก middleware auth
+  
+      // ตรวจสอบสิทธิ์ของ admin
+      if (!user || user.role !== "admin") {
+        return res
+          .status(403)
+          .json({ message: "Only admin can access all keywords" });
+      }
+  
+      // ดึงข้อมูล keywords และ populate ข้อมูลที่เกี่ยวข้อง
+      const keywords = await Keyword.find()
+        .populate("createdBy", "firstName lastName email") // สมมติว่า 'createdBy' เชื่อมโยงกับ user
+        .sort({ createdAt: -1 }); // จัดเรียงตามวันที่สร้างล่าสุด
+  
+      // จัดรูปแบบข้อมูลเพื่อให้สะดวกในการแสดง
+      const formattedKeywords = keywords.map(keyword => ({
+        ...keyword.toObject(),
+        createdByFullName: `${keyword.createdBy.firstName} ${keyword.createdBy.lastName}`,
+        createdByEmail: keyword.createdBy.email,
+      }));
+  
+      res.status(200).json({
+        success: true,
+        data: formattedKeywords, // ส่งข้อมูลที่จัดรูปแบบแล้ว
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
     }
-
-    const keywords = await Keyword.find();
-    res.status(200).json(keywords);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
+  });
+  
 const deleteKeywordByAdmin = async (req, res) => {
   try {
     const user = req.user; // ดึง user จาก middleware auth

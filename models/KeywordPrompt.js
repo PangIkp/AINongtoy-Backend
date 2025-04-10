@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const KeywordPromptSchema = new mongoose.Schema(
+const keywordSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -25,5 +25,5 @@ const KeywordPromptSchema = new mongoose.Schema(
   }
 );
 
-const Keyword = mongoose.model("Keyword", KeywordPromptSchema);
+const Keyword = mongoose.model("Keyword", keywordSchema);
 module.exports = Keyword;
