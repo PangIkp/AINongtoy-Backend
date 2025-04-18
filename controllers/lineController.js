@@ -26,28 +26,38 @@ const handleWebhook = async (req, res) => {
 };
 
 // ฟังก์ชันตอบกลับข้อความจาก LINE
-const replyToUser = async (replyToken, message) => {
-  const axios = require('axios');
-  const lineApiUrl = 'https://api.line.me/v2/bot/message/reply';
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`
+const replyToUser = async (replyToken, fullMessage) => {
+    const axios = require('axios');
+    const lineApiUrl = 'https://api.line.me/v2/bot/message/reply';
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`
+    };
+  
+    // LINE จำกัดไว้ที่ 5 ข้อความต่อ reply และแต่ละข้อความไม่เกิน 2000 ตัวอักษร
+    const MAX_MESSAGES = 5;
+    const MAX_CHARS_PER_MESSAGE = 1500; // เผื่อไว้นิด
+  
+    const chunks = [];
+    for (let i = 0; i < fullMessage.length && chunks.length < MAX_MESSAGES; i += MAX_CHARS_PER_MESSAGE) {
+      chunks.push({
+        type: 'text',
+        text: fullMessage.substring(i, i + MAX_CHARS_PER_MESSAGE)
+      });
+    }
+  
+    const body = {
+      replyToken: replyToken,
+      messages: chunks
+    };
+  
+    try {
+      await axios.post(lineApiUrl, body, { headers });
+    } catch (error) {
+      console.error('Error sending reply:', error.response?.data || error.message);
+    }
   };
-
-  const body = {
-    replyToken: replyToken,
-    messages: [{
-      type: 'text',
-      text: message
-    }]
-  };
-
-  try {
-    await axios.post(lineApiUrl, body, { headers });
-  } catch (error) {
-    console.error('Error sending reply:', error);
-  }
-};
+  
 
 module.exports = {
   handleWebhook
