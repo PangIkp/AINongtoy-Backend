@@ -8,7 +8,17 @@ const askChatGpt = async (userMessage) => {
   try {
     const response = await axios.post(url, {
       model: 'gpt-3.5-turbo', // หรือใช้รุ่นอื่นที่ต้องการ
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant who only answers questions related to ArtToys. You can reply in Thai or English depending on the user\'s message. If the question is unrelated, respond politely that you only answer ArtToy-related topics.'
+        },
+        {
+          role: 'user',
+          content: userMessage
+        }
+      ],
+      
       max_tokens: 150,
     }, {
       headers: {

@@ -11,7 +11,7 @@ const handleWebhook = async (req, res) => {
         const userMessage = event.message.text;
 
         // เรียกใช้ model สำหรับการถามข้อมูลจาก ChatGPT
-        const chatGptResponse = await chatGptModel.askChatGpt(userMessage); // เปลี่ยนการเรียกใช้เป็น ChatGptModel
+        const chatGptResponse = await chatGptModel.askChatGpt(userMessage); 
 
         // ส่งข้อความตอบกลับไปที่ LINE
         const replyToken = event.replyToken;
