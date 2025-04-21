@@ -42,6 +42,33 @@ exports.register = async (req, res, next) => {
       res.status(500).json({ success: false, msg: "Server error" });
     }
   };
+ 
+  exports.googleLogin = async (req, res) => {
+    const { email, firstName, lastName, googleId } = req.body;
+  
+    try {
+      let user = await User.findOne({ email });
+  
+      if (!user) {
+        user = await User.create({
+          email,
+          firstName,
+          lastName,
+          username: email.split('@')[0],
+          phoneNumber: "0000000000",
+          password: "google_auth",  
+          authProvider: "google",
+          googleId,
+        });
+      }
+  
+      // สร้าง token แล้วส่งกลับ
+      sendTokenResponse(user, 200, res);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, msg: "Google login failed" });
+    }
+  };
   
 
 //@desc     Login user
