@@ -10,8 +10,10 @@ const auth = require('./routes/auth')
 const artToy = require('./routes/arttoy'); 
 const favorite = require('./routes/favorite'); 
 const order = require('./routes/order'); 
+const keyword = require('./routes/keyword');
 
 // Add this line
+const lineRoutes = require('./routes/lineRoutes');
 
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
@@ -29,6 +31,9 @@ app.use("/api/v1/auth", auth);
 app.use("/api/v1/arttoy", artToy);
 app.use("/api/v1/favorite", favorite);
 app.use("/api/v1/order", order);
+app.use("/api/v1/keyword", keyword);
+
+app.use("/api", lineRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -44,6 +49,20 @@ const server = app.listen(
     PORT
   )
 );
+
+// const ngrok = require('ngrok');
+
+// async function startNgrok() {
+//   try {
+//     const url = await ngrok.connect(3001);  
+//     console.log('ngrok tunnel established at ' + url); 
+//   } catch (error) {
+//     console.error('Error starting ngrok: ', error);
+//   }
+// }
+
+// startNgrok();
+
 
 //Handle unhandled promise rejection
 process.on("unhandledRejection", (err, promise) => {

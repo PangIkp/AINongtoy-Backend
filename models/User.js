@@ -60,7 +60,7 @@ const UserSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
       required: [true, "Please provide a phone number"],
-      unique: true,
+      // unique: true,
       trim: true,
       match: [/^[0-9]{10}$/, "Phone number must be exactly 10 digits"],
     },
@@ -93,6 +93,17 @@ const UserSchema = new mongoose.Schema(
       enum: ["active", "banned"], // สามารถกำหนดได้ 3 สถานะ
       default: "active", // กำหนดค่าเริ่มต้นเป็น active
     },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      default: null,
+    },
+
 
     resetPasswordToken: String,
     resetPasswordExpire: Date,
