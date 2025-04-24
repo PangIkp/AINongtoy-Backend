@@ -52,7 +52,7 @@ exports.register = async (req, res, next) => {
 };
 
 exports.googleLogin = async (req, res) => {
-  const { email, firstName, lastName, googleId } = req.body;
+  const { email, firstName, lastName} = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -78,7 +78,7 @@ exports.googleLogin = async (req, res) => {
 };
 
 exports.facebookLogin = async (req, res) => {
-  const { email, firstName, lastName, facebookId } = req.body;
+  const { email, firstName, lastName} = req.body;
 
   try {
     // ค้นหาผู้ใช้ที่มี email นี้
