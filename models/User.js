@@ -99,11 +99,6 @@ const UserSchema = new mongoose.Schema(
       enum: ["local", "google", "facebook"],
       default: "local",
     },
-    googleId: {
-      type: String,
-      default: null,
-    },
-
 
     resetPasswordToken: String,
     resetPasswordExpire: Date,

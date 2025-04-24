@@ -66,7 +66,6 @@ exports.googleLogin = async (req, res) => {
         phoneNumber: "0000000000",
         password: "google_auth",
         authProvider: "google",
-        googleId,
       });
     }
 
@@ -95,7 +94,6 @@ exports.facebookLogin = async (req, res) => {
         phoneNumber: "0000000000", // กำหนดหมายเลขโทรศัพท์เป็นค่าเริ่มต้น
         password: "facebook_auth", // กำหนด password เป็นค่าเริ่มต้น
         authProvider: "facebook", // ระบุว่าใช้ Facebook ในการเข้าสู่ระบบ
-        facebookId, // บันทึก Facebook ID
       });
     }
 
