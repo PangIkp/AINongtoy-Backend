@@ -70,6 +70,33 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
+exports.facebookLogin = async (req, res) => {
+  const { email, firstName, lastName } = req.body;
+
+  try {
+    // ค้นหาผู้ใช้ที่มี email นี้
+    let user = await User.findOne({ email });
+
+    // ถ้าผู้ใช้ยังไม่มีในฐานข้อมูล ให้สร้างใหม่
+    if (!user) {
+      user = await User.create({
+        email,
+        firstName,
+        lastName,
+        username: email.split("@")[0], // สร้าง username จาก email
+        phoneNumber: "0000000000", // กำหนดหมายเลขโทรศัพท์เป็นค่าเริ่มต้น
+        password: "facebook_auth", // กำหนด password เป็นค่าเริ่มต้น
+        authProvider: "facebook", // ระบุว่าใช้ Facebook ในการเข้าสู่ระบบ
+      });
+    }
+
+    // สร้าง token และส่งกลับ
+    sendTokenResponse(user, 200, res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, msg: "Facebook login failed" });
+  }
+};
 
 //@desc     Login user
 //@route    POST /api/v1/auth/login
@@ -96,7 +123,6 @@ exports.login = async (req, res, next) => {
         .json({ success: false, msg: "Invalid credentials" });
     }
 
-
     // Check if password matches
     const isMatch = await user.matchPassword(password);
 
@@ -115,7 +141,6 @@ exports.login = async (req, res, next) => {
     });
   }
 };
-
 
 //Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
@@ -145,7 +170,6 @@ const sendTokenResponse = (user, statusCode, res) => {
     data: user,
     token,
   });
-
 };
 
 //@desc     Get current Logged in user
