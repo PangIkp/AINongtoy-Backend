@@ -1,5 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const fs = require("fs");
+const path = require("path");
 const bodyParser = require('body-parser')
 const app = express();
 const cors = require("cors");
@@ -15,8 +17,17 @@ const keyword = require('./routes/keyword');
 // Add this line
 const lineRoutes = require('./routes/lineRoutes');
 
-// Load env vars
-dotenv.config({ path: "./config/config.env" });
+// Load env vars from config/config.env first, then fallback to .env
+const configEnvPath = path.join(__dirname, "config", "config.env");
+const rootEnvPath = path.join(__dirname, ".env");
+
+if (fs.existsSync(configEnvPath)) {
+  dotenv.config({ path: configEnvPath });
+} else if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath });
+} else {
+  dotenv.config();
+}
 
 connectDB();
 

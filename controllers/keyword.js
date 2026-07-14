@@ -57,8 +57,10 @@ const createKeyword = async (req, res) => {
       // จัดรูปแบบข้อมูลเพื่อให้สะดวกในการแสดง
       const formattedKeywords = keywords.map(keyword => ({
         ...keyword.toObject(),
-        createdByFullName: `${keyword.createdBy.firstName} ${keyword.createdBy.lastName}`,
-        createdByEmail: keyword.createdBy.email,
+        createdByFullName: keyword.createdBy
+          ? `${keyword.createdBy.firstName} ${keyword.createdBy.lastName}`
+          : "Unknown user",
+        createdByEmail: keyword.createdBy?.email || null,
       }));
   
       res.status(200).json({
